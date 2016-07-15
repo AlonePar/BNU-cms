@@ -1,4 +1,4 @@
-package test;
+package cn.edu.bnu.cms.store.test;
 
 import cn.edu.bnu.cms.store.OSSCredentials;
 import cn.edu.bnu.cms.store.STSToken;
