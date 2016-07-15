@@ -15,7 +15,7 @@ import java.util.Base64;
 public class Crypto {
     private static Mac macInstance;
     private static final Object LOCK = new Object();
-    private static final String HMAC_SHA1 = "HMAC_SHA1";
+    private static final String HMAC_SHA1 = "HmacSHA1";
 
     public static String encryptByMd5(String text) {
         try {

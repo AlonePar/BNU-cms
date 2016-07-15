@@ -38,62 +38,12 @@ public class OSSClient {
         RESPONSE_CACHE_CONTROL, RESPONSE_CONTENT_DISPOSITION, RESPONSE_CONTENT_ENCODING,
     });
 
-    public static final String OSS_READONLY_POLICY = "{\n"
-            + "  \"Statement\": [\n"
-            + "    {\n"
-            + "      \"Action\": [\n"
-            + "        \"oss:Get*\",\n"
-            + "        \"oss:List*\"\n"
-            + "      ],\n"
-            + "      \"Effect\": \"Allow\",\n"
-            + "      \"Resource\": \"*\"\n"
-            + "    }\n"
-            + "  ],\n"
-            + "  \"Version\": \"1\"\n"
-            + "}";
-
-    public static final String OSS_FULL_POLICY = "{\n"
-            + "  \"Statement\": [\n"
-            + "    {\n"
-            + "      \"Action\": \"oss:*\",\n"
-            + "      \"Effect\": \"Allow\",\n"
-            + "      \"Resource\": \"*\"\n"
-            + "    }\n"
-            + "  ],\n"
-            + "  \"Version\": \"1\"\n"
-            + "}";
-
-
-
     private final String endpoint;
-    private final String accessKeyId;
-    private final String accessKeySecret;
-    private final String securityToken;
+    private final OSSCredentials credentials;
 
-    public OSSClient(String endpoint, String accessKeyId, String accessKeySecret) {
-        this(endpoint, accessKeyId, accessKeySecret, null);
-    }
-
-    public OSSClient(String endpoint, String accessKeyId, String accessKeySecret, String securityToken) {
-        if (endpoint == null || endpoint.equals("")) {
-            throw new IllegalArgumentException("Endpoint should not be null or empty.");
-        }
-        if (accessKeyId == null || accessKeyId.equals("")) {
-            throw new IllegalArgumentException("Access key id should not be null or empty.");
-        }
-        if (accessKeySecret == null || accessKeyId.equals("")) {
-            throw new IllegalArgumentException("Secret access key should not be null or empty.");
-        }
-
+    public OSSClient(String endpoint, OSSCredentials credentials) {
         this.endpoint = endpoint;
-        this.accessKeyId = accessKeyId;
-        this.accessKeySecret = accessKeySecret;
-        this.securityToken = securityToken;
-    }
-
-    // TODO 生成临时Security Token, 默认1小时即过期
-    public String refreshSecurityToken(String roleArn, String sessionName, String policy) {
-        return null;
+        this.credentials = credentials;
     }
 
     /**
@@ -107,7 +57,7 @@ public class OSSClient {
     public String signLinkUrl(String method, String bucketName, String objectName, Date expires) {
         String data = method + "\n\n\n" + expires.getTime() + "\n"
                 + getCanonicalizedResource(bucketName, objectName, null);
-        return Base64.getEncoder().encodeToString(Crypto.hmacSha1(accessKeySecret.getBytes(), data.getBytes()));
+        return Base64.getEncoder().encodeToString(Crypto.hmacSha1(credentials.getAccessKeySecret().getBytes(), data.getBytes()));
     }
 
     /**
@@ -156,7 +106,7 @@ public class OSSClient {
         // 添加 CanonicalizedResource
         sb.append(getCanonicalizedResource(bucketName, objectName, request));
         return Base64.getEncoder().encodeToString(
-                Crypto.hmacSha1(accessKeySecret.getBytes(), sb.toString().getBytes()));
+                Crypto.hmacSha1(credentials.getAccessKeySecret().getBytes(), sb.toString().getBytes()));
     }
 
     public static String getCanonicalizedResource(String bucketName, String objectName, HttpServletRequest request) {
@@ -193,18 +143,6 @@ public class OSSClient {
 
     public String getEndpoint() {
         return endpoint;
-    }
-
-    public String getAccessKeyId() {
-        return accessKeyId;
-    }
-
-    public String getAccessKeySecret() {
-        return accessKeySecret;
-    }
-
-    public String getSecurityToken() {
-        return securityToken;
     }
 
 }

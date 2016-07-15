@@ -1,6 +1,7 @@
 package cn.edu.bnu.cms.beans;
 
 import cn.edu.bnu.cms.common.Crypto;
+import cn.edu.bnu.cms.common.NetUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -12,7 +13,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -52,7 +52,7 @@ public class SmsSender {
         map.put("sms_template_code", templateId);
         map.put("rec_num", sim);
         map.put("sign", computeSignature(map, appSecret));
-        byte[] content = buildQueryString(map, "UTF-8").getBytes();
+        byte[] content = NetUtil.buildQueryString(map).getBytes();
 
         URL url = new URL("http://gw.api.taobao.com/router/rest");
         HttpURLConnection connection = null;
@@ -105,29 +105,6 @@ public class SmsSender {
         }
         queryString.append(appSecret);
         return Crypto.encryptByMd5(queryString.toString()).toUpperCase();
-    }
-
-    public static String buildQueryString(Map<String, String> params, String charset) throws IOException {
-        if (params == null || params.isEmpty()) {
-            return "";
-        }
-
-        StringBuilder query = new StringBuilder();
-        boolean firstParam = true;
-        for (Map.Entry<String, String> entry: params.entrySet()) {
-            String name = entry.getKey();
-            String value = entry.getValue();
-            if (!"".equals(name) && value != null && !"".equals(value)) {
-                if (!firstParam) {
-                    query.append("&");
-                } else {
-                    firstParam = false;
-                }
-
-                query.append(name).append("=").append(URLEncoder.encode(value, charset));
-            }
-        }
-        return query.toString();
     }
 
 }
