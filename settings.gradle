@@ -1,0 +1,8 @@
+rootProject.name = 'BNU-cms'
+include 'core'
+include 'admin'
+include 'user-center'
+include 'portal'
+include 'oss-storage'
+include 'common'
+

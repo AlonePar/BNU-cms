@@ -1,0 +1,23 @@
+CREATE TABLE `t_post` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `title` varchar(120) DEFAULT NULL COMMENT '标题',
+  `node_id` int(11) DEFAULT NULL COMMENT '节点ID',
+  `creator_id` int(11) DEFAULT NULL,
+  `creator_name` varchar(50) DEFAULT NULL,
+  `tags` varchar(255) DEFAULT NULL,
+  `model_type` int(11) DEFAULT NULL COMMENT '结点内容模型类型，1为文章类型，2为图片新闻类型，3为视频类型，4为附件下载类型',
+  `status` int(11) DEFAULT NULL COMMENT '稿件状态 -3为删除，-2为退稿，-1为草稿，0为待审核，99为终审通过，其它为自定义',
+  `elite_level` int(11) DEFAULT '0' COMMENT '推荐级别，0为不推荐，1为栏目置顶，2为频道置顶，3为全站置顶',
+  `read_permission` int(11) DEFAULT '0' COMMENT '查阅权限',
+  `thumbnail` varchar(255) DEFAULT NULL,
+  `exerpt` varchar(255) DEFAULT NULL,
+  `like_count` int(11) DEFAULT NULL COMMENT '点赞个数',
+  `star_count` int(11) DEFAULT NULL COMMENT '星级评定次数',
+  `star_rate` float(6,4) DEFAULT NULL COMMENT '累计平均星级',
+  `has_attachment` tinyint(1) DEFAULT NULL COMMENT '是否有附件',
+  `comment_audited` int(11) DEFAULT NULL,
+  `comment_unaudited` int(11) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

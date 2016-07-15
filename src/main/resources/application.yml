@@ -1,0 +1,57 @@
+security.basic.enabled: false
+logging.level.org.springframework.boot.autoconfigure.security.AuthenticationManagerConfiguration: INFO
+
+management:
+  port: 8081
+  address: 127.0.0.1
+  context-path: /admin/actuator
+
+app:
+    sms:
+        appKey:
+        appSecret:
+        templateId:
+        signature:
+    mail:
+        host: smtp.qq.com
+        port: 587
+        username:
+        password:
+server:
+    port: 12345
+    compression:
+        enabled: true
+        mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
+        min-response-size: 1024
+
+logging:
+    level:
+        org.hibernate: WARN
+        org.springframework: WARN
+    file: server.log
+
+# spring
+spring:
+    profiles.active: dev
+    datasource:
+        url: jdbc:mysql://127.0.0.1:3306/bnu-cms?characterEncoding=utf8&useSSL=false
+        username: root
+        password:
+        hikari:
+            minimumIdle: 5
+            maximumPoolSize: 15
+            data-source-properties:
+                cachePrepStmts: true
+                prepStmtCacheSize: 250
+                prepStmtCacheSqlLimit: 2048
+                useServerPrepStmts: true
+    jpa:
+        show-sql: false
+        hibernate:
+            # Hibernate DDL  auto: create, create-drop, update, validate
+            ddl-auto: validate
+        properties:
+            hibernate.dialect: org.hibernate.dialect.MySQL5Dialect
+    redis:
+        host: localhost
+        port: 6379
