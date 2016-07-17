@@ -142,7 +142,7 @@ public class OSSCredentials {
 
         String response;
         try {
-            String url = "https://sts.aliyuncs.com/?" + NetUtil.buildQueryString(params);
+            String url = ENDPOINT + "?" + NetUtil.buildQueryString(params);
             HttpsURLConnection connection = (HttpsURLConnection) new URL(url).openConnection();
             connection.setDoOutput(false);
             connection.setDoInput(true);
@@ -174,6 +174,10 @@ public class OSSCredentials {
         } catch (IOException | ParseException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static String getEndpoint() {
+        return ENDPOINT;
     }
 
     @Override

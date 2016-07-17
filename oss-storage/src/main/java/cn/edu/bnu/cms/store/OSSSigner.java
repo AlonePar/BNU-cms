@@ -36,10 +36,10 @@ public class OSSSigner {
             RESPONSE_CACHE_CONTROL, RESPONSE_CONTENT_DISPOSITION, RESPONSE_CONTENT_ENCODING,
     });
 
-    private OSSClient client;
+    private OSSCredentials credentials;
 
-    public OSSSigner(OSSClient client) {
-        this.client = client;
+    public OSSSigner(OSSCredentials credentials) {
+        this.credentials = credentials;
     }
 
     /**
@@ -54,7 +54,7 @@ public class OSSSigner {
         String data = method + "\n\n\n" + expires.getTime() + "\n"
                 + getCanonicalizedResource(bucketName, objectName, null);
         return Base64.getEncoder().encodeToString(Crypto.hmacSha1(
-                client.getCredentials().getAccessKeySecret().getBytes(), data.getBytes()));
+                credentials.getAccessKeySecret().getBytes(), data.getBytes()));
     }
 
     /**
@@ -103,7 +103,7 @@ public class OSSSigner {
         // 添加 CanonicalizedResource
         sb.append(getCanonicalizedResource(bucketName, objectName, request));
         return Base64.getEncoder().encodeToString(
-                Crypto.hmacSha1(client.getCredentials().getAccessKeySecret().getBytes(), sb.toString().getBytes()));
+                Crypto.hmacSha1(credentials.getAccessKeySecret().getBytes(), sb.toString().getBytes()));
     }
 
     public static String getCanonicalizedResource(String bucketName, String objectName, HttpServletRequest request) {
