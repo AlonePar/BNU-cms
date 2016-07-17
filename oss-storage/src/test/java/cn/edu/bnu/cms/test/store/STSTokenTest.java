@@ -1,7 +1,6 @@
 package cn.edu.bnu.cms.test.store;
 
 import cn.edu.bnu.cms.store.OSSCredentials;
-import cn.edu.bnu.cms.store.STSToken;
 import org.junit.Test;
 
 /**
@@ -14,7 +13,7 @@ public class STSTokenTest {
         String keyId = "0yDwwrETJRLzqteq";
         String keySecret = "ni2CHVEFzRb25zmXE7hTBJlxrsbNbw";
 
-        OSSCredentials credentials = STSToken.refreshCredentials(new OSSCredentials(keyId, keySecret),
+        OSSCredentials credentials = OSSCredentials.refreshCredentials(new OSSCredentials(keyId, keySecret),
                 "acs:ram::1859365503745150:role/aliyunosstokengeneratorrole");
         System.out.println(credentials);
     }
