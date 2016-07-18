@@ -42,17 +42,23 @@ public class OSSSigner {
         this.credentials = credentials;
     }
 
+    public String signPostObjectPolicy(String policy) {
+        return Base64.getEncoder().encodeToString(Crypto.hmacSha1(
+                credentials.getAccessKeySecret().getBytes(), policy.getBytes()));
+    }
+
     /**
-     * 生成上传或下载URL签名
+     * 生成上传或下载URL签名, 不能使用刷新Token方式生成的key进行URL签名, URL签名不需再URLEncode,直接拼接入URL查询字符串中即可
      * @param method PUT或GET
-     * @param bucketName
-     * @param objectName
+     * @param bucket
+     * @param key
      * @param expires
      * @return
      */
-    public String signLinkUrl(String method, String bucketName, String objectName, Date expires) {
+    public String signLinkUrl(String method, String bucket, String key, Date expires) {
         String data = method + "\n\n\n" + expires.getTime() + "\n"
-                + getCanonicalizedResource(bucketName, objectName, null);
+                + getCanonicalizedResource(bucket, key, null);
+        System.out.println(data);
         return Base64.getEncoder().encodeToString(Crypto.hmacSha1(
                 credentials.getAccessKeySecret().getBytes(), data.getBytes()));
     }
@@ -60,11 +66,11 @@ public class OSSSigner {
     /**
      * 生成OSS API请求Header签名
      * @param request
-     * @param bucketName
-     * @param objectName
+     * @param bucket
+     * @param key
      * @return
      */
-    public String signHeader(HttpServletRequest request, String bucketName, String objectName) {
+    public String signHeader(HttpServletRequest request, String bucket, String key) {
         StringBuilder sb = new StringBuilder();
         sb.append(request.getMethod() + '\n');
         String contentMd5 = request.getHeader("Content-MD5");
@@ -89,11 +95,11 @@ public class OSSSigner {
 
         // 添加 x-oss- 头
         for (Map.Entry<String, String> entry : headersToSign.entrySet()) {
-            String key = entry.getKey();
+            String k = entry.getKey();
             Object value = entry.getValue();
 
-            if (key.startsWith(OSS_PREFIX)) {
-                sb.append(key).append(':').append(value);
+            if (k.startsWith(OSS_PREFIX)) {
+                sb.append(k).append(':').append(value);
             } else {
                 sb.append(value);
             }
@@ -101,33 +107,33 @@ public class OSSSigner {
         }
 
         // 添加 CanonicalizedResource
-        sb.append(getCanonicalizedResource(bucketName, objectName, request));
+        sb.append(getCanonicalizedResource(bucket, key, request));
         return Base64.getEncoder().encodeToString(
                 Crypto.hmacSha1(credentials.getAccessKeySecret().getBytes(), sb.toString().getBytes()));
     }
 
-    public static String getCanonicalizedResource(String bucketName, String objectName, HttpServletRequest request) {
+    public static String getCanonicalizedResource(String bucket, String key, HttpServletRequest request) {
         StringBuilder builder = new StringBuilder("/");
 
-        if (bucketName != null && !"".equals(bucketName)) {
-            builder.append(bucketName + "/");
+        if (bucket != null && !"".equals(bucket)) {
+            builder.append(bucket + "/");
         }
-        if (objectName != null && !"".equals(objectName)) {
-            builder.append(objectName);
+        if (key != null && !"".equals(key)) {
+            builder.append(key);
         }
 
         if (request != null) {
             List<String> params = Collections.list(request.getParameterNames());
             Collections.sort(params);
             char separator = '?';
-            for (String key : params) {
-                if (!SIGNED_PARAMTERS.contains(key)) {
+            for (String k : params) {
+                if (!SIGNED_PARAMTERS.contains(k)) {
                     continue;
                 }
 
                 builder.append(separator);
-                builder.append(key);
-                String paramValue = request.getParameter(key);
+                builder.append(k);
+                String paramValue = request.getParameter(k);
                 if (paramValue != null) {
                     builder.append("=" + paramValue);
                 }
