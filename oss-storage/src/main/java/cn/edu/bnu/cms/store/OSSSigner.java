@@ -1,8 +1,8 @@
 package cn.edu.bnu.cms.store;
 
 import cn.edu.bnu.cms.common.Crypto;
+import cn.edu.bnu.cms.common.NetUtil;
 
-import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -16,9 +16,6 @@ import static com.aliyun.oss.model.ResponseHeaderOverrides.*;
 public class OSSSigner {
 
     public static final String OSS_PREFIX = "x-oss-";
-
-    // RFC 822 Date Format
-    public static final String RFC822_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss Z";
 
     public static final List<String> SIGNED_PARAMTERS = Arrays.asList(new String[] {
             SUBRESOURCE_ACL, SUBRESOURCE_UPLOADS, SUBRESOURCE_LOCATION,
@@ -64,32 +61,39 @@ public class OSSSigner {
     }
 
     /**
-     * 生成OSS API请求Header签名
-     * @param request
+     *
+     * @param method
      * @param bucket
      * @param key
+     * @param headers
+     * @param parameters
      * @return
      */
-    public String signHeader(HttpServletRequest request, String bucket, String key) {
+    public String signHeader(String method, String bucket, String key, Map<String, String> headers, Map<String, String> parameters) {
         StringBuilder sb = new StringBuilder();
-        sb.append(request.getMethod() + '\n');
-        String contentMd5 = request.getHeader("Content-MD5");
+        sb.append(method + '\n');
+        String contentMd5 = headers.get("Content-MD5");
         sb.append(contentMd5 != null ? contentMd5 : "");
         sb.append('\n');
-        String contentType = request.getHeader("Content-Type");
+        String contentType = headers.get("Content-Type");
         sb.append(contentType != null ? contentType : "");
         sb.append('\n');
-        String date = request.getHeader("Date");
-        sb.append(date != null ? date : new SimpleDateFormat(RFC822_DATE_FORMAT).format(new Date()));
+        String date = headers.get("Date");
+        if (date == null) {
+            SimpleDateFormat sdf = new SimpleDateFormat(NetUtil.GMT_DATE_FORMAT, Locale.US);
+            sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+            date = sdf.format(new Date());
+        }
+        sb.append(date);
         sb.append('\n');
 
         // 处理 x-oss- 头
         TreeMap<String, String> headersToSign = new TreeMap<>();
-        Enumeration<String> headers = request.getHeaderNames();
-        while (headers.hasMoreElements()) {
-            String header = headers.nextElement();
-            if (header.startsWith(OSS_PREFIX)) {
-                headersToSign.put(header, request.getHeader(header).trim());
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            String name = entry.getKey();
+            String value = entry.getValue();
+            if (name.startsWith(OSS_PREFIX)) {
+                headersToSign.put(name, value.trim());
             }
         }
 
@@ -107,12 +111,12 @@ public class OSSSigner {
         }
 
         // 添加 CanonicalizedResource
-        sb.append(getCanonicalizedResource(bucket, key, request));
+        sb.append(getCanonicalizedResource(bucket, key, parameters));
         return Base64.getEncoder().encodeToString(
                 Crypto.hmacSha1(credentials.getAccessKeySecret().getBytes(), sb.toString().getBytes()));
     }
 
-    public static String getCanonicalizedResource(String bucket, String key, HttpServletRequest request) {
+    public static String getCanonicalizedResource(String bucket, String key, Map<String, String> parameters) {
         StringBuilder builder = new StringBuilder("/");
 
         if (bucket != null && !"".equals(bucket)) {
@@ -122,9 +126,9 @@ public class OSSSigner {
             builder.append(key);
         }
 
-        if (request != null) {
-            List<String> params = Collections.list(request.getParameterNames());
-            Collections.sort(params);
+        if (parameters != null) {
+            String[] params = parameters.keySet().toArray(new String[]{});
+            Arrays.sort(params);
             char separator = '?';
             for (String k : params) {
                 if (!SIGNED_PARAMTERS.contains(k)) {
@@ -133,7 +137,7 @@ public class OSSSigner {
 
                 builder.append(separator);
                 builder.append(k);
-                String paramValue = request.getParameter(k);
+                String paramValue = parameters.get(k);
                 if (paramValue != null) {
                     builder.append("=" + paramValue);
                 }

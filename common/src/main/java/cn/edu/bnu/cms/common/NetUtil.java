@@ -9,6 +9,15 @@ import java.util.Map;
  * Created by dave on 16/7/15.
  */
 public class NetUtil {
+    // RFC 822 Date Format
+    public static final String RFC822_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss Z";
+
+    // GMT Date Format
+    public static final String GMT_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss z";
+
+    // ISO8601 Date Format
+    public static final String ISO08601_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+
     public static String buildQueryString(Map<String, String> params) throws IOException {
         if (params == null || params.isEmpty()) {
             return "";

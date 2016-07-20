@@ -22,13 +22,20 @@ public class STSTokenTest {
      *   ]
      * }
      */
-    String policy = "eyAiZXhwaXJhdGlvbiI6ICIyMDUwLTEyLTAxVDEyOjAwOjAwLjAwMFoiLAogICJjb25kaXRpb25zIjogWwogICAgeyJidWNrZXQiOiAidHUtaW4ifQogIF0KfQ==";
+    String policy = "eyAiZXhwaXJhdGlvbiI6ICIyMDE2LTEyLTAxVDEyOjAwOjAwLjAwMFoiLAogICJjb25kaXRpb25zIjogWwogICAgeyJidWNrZXQiOiAidHUtaW4ifQogIF0KfQ==";
 
     @Test
     public void testRefreshToken() throws Exception {
         OSSCredentials credentials = OSSCredentials.refreshCredentials(new OSSCredentials(keyId, keySecret),
                 "acs:ram::1859365503745150:role/aliyunosstokengeneratorrole");
         System.out.println(credentials);
+        System.out.println(Base64.getEncoder().encodeToString(Crypto.hmacSha1(
+                credentials.getAccessKeySecret().getBytes(), policy.getBytes())));
+    }
+
+    @Test
+    public void testSignPolicy() {
+        OSSCredentials credentials = new OSSCredentials(keyId, keySecret);
         System.out.println(Base64.getEncoder().encodeToString(Crypto.hmacSha1(
                 credentials.getAccessKeySecret().getBytes(), policy.getBytes())));
     }

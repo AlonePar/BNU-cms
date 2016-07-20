@@ -123,7 +123,7 @@ public class OSSCredentials {
         params.put("SignatureMethod", "HMAC-SHA1");
         params.put("SignatureVersion", "1.0");
         params.put("SignatureNonce", "" + VerifyCode.generateVerifyCode(5));
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        SimpleDateFormat sdf = new SimpleDateFormat(NetUtil.ISO08601_DATE_FORMAT);
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         params.put("Timestamp", sdf.format(new Date()));
         // AssumeRole 参数
