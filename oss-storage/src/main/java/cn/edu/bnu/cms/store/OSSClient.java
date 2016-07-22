@@ -59,6 +59,16 @@ public class OSSClient {
         }
     }
 
+    /**
+     * 生成CDN访问鉴权auth_key, 基于鉴权方式A算法。
+     * @param path 请求路径,不包含域名部分
+     * @param exires 离当前多少秒后失效
+     * @return
+     */
+    public String getCDNAuthKey(String path, long exires) {
+        return null;
+    }
+
     public OSSCredentials getCredentials() {
         return credentials;
     }
